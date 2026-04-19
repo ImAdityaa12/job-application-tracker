@@ -5,9 +5,14 @@ import { syncUserGmail } from "@/lib/sync";
 import { eq } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
-  // Verify cron secret to prevent unauthorized access
+  // Verify cron secret — support both Authorization header (Vercel) and query param (UptimeRobot)
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const querySecret = request.nextUrl.searchParams.get("secret");
+  const isAuthorized =
+    authHeader === `Bearer ${process.env.CRON_SECRET}` ||
+    querySecret === process.env.CRON_SECRET;
+
+  if (!isAuthorized) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
