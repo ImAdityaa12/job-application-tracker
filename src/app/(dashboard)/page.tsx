@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SyncButton } from "@/components/SyncButton";
@@ -84,6 +83,7 @@ function ActivitySkeleton() {
 export default function DashboardPage() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
+  const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
 
   useEffect(() => {
     if (!isPending && !session) {
@@ -110,8 +110,6 @@ export default function DashboardPage() {
       </div>
     );
   }
-
-  const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
 
   if (!session) return null;
 
