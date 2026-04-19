@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { MapPin, Clock, CalendarDays } from "lucide-react";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
 const locales = { "en-US": enUS };
@@ -49,6 +50,21 @@ interface CalendarEvent {
   company: string;
   role: string;
 }
+
+const typeColors: Record<string, { bg: string; border: string }> = {
+  phone_screen: { bg: "#DBEAFE", border: "#3B82F6" },
+  technical: { bg: "#D1FAE5", border: "#10B981" },
+  hr: { bg: "#EDE9FE", border: "#8B5CF6" },
+  assignment: { bg: "#FEF3C7", border: "#F59E0B" },
+  final: { bg: "#FCE7F3", border: "#EC4899" },
+  offer_call: { bg: "#CCFBF1", border: "#14B8A6" },
+};
+
+const outcomeColors: Record<string, string> = {
+  pending: "bg-amber-50 text-amber-700 border-amber-200",
+  passed: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  failed: "bg-red-50 text-red-700 border-red-200",
+};
 
 export function InterviewCalendar() {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
@@ -98,9 +114,24 @@ export function InterviewCalendar() {
     setSelectedEvent(event);
   }, []);
 
+  const eventStyleGetter = useCallback((event: CalendarEvent) => {
+    const colors = typeColors[event.interview.type] || { bg: "#F3F4F6", border: "#9CA3AF" };
+    return {
+      style: {
+        backgroundColor: colors.bg,
+        borderLeft: `3px solid ${colors.border}`,
+        color: "#1E293B",
+        borderRadius: "6px",
+        fontSize: "12px",
+        fontWeight: 500,
+        padding: "2px 6px",
+      },
+    };
+  }, []);
+
   return (
     <>
-      <div className="h-[calc(100vh-10rem)]">
+      <div className="h-[calc(100vh-10rem)] calendar-themed">
         <Calendar
           localizer={localizer}
           events={events}
@@ -111,6 +142,7 @@ export function InterviewCalendar() {
           date={date}
           onNavigate={setDate}
           onSelectEvent={handleSelectEvent}
+          eventPropGetter={eventStyleGetter}
           style={{ height: "100%" }}
         />
       </div>
@@ -121,39 +153,54 @@ export function InterviewCalendar() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{selectedEvent?.company}</DialogTitle>
+            <DialogTitle className="text-lg">{selectedEvent?.company}</DialogTitle>
+            <p className="text-sm text-muted-foreground">
+              {selectedEvent?.role}
+            </p>
           </DialogHeader>
           {selectedEvent && (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                {selectedEvent.role}
-              </p>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Type:</span>{" "}
-                  <span className="capitalize">
+            <div className="space-y-4 pt-2">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-lg border p-3">
+                  <span className="text-xs text-muted-foreground">Type</span>
+                  <p className="font-medium text-sm capitalize mt-0.5">
                     {selectedEvent.interview.type.replace("_", " ")}
+                  </p>
+                </div>
+                <div className="rounded-lg border p-3">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <CalendarDays className="h-3 w-3" /> Date
                   </span>
+                  <p className="font-medium text-sm mt-0.5">
+                    {selectedEvent.start.toLocaleString()}
+                  </p>
                 </div>
-                <div>
-                  <span className="text-muted-foreground">Date:</span>{" "}
-                  {selectedEvent.start.toLocaleString()}
+                <div className="rounded-lg border p-3">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> Duration
+                  </span>
+                  <p className="font-medium text-sm mt-0.5">
+                    {selectedEvent.interview.durationMinutes} min
+                  </p>
                 </div>
-                <div>
-                  <span className="text-muted-foreground">Duration:</span>{" "}
-                  {selectedEvent.interview.durationMinutes} min
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Outcome:</span>{" "}
-                  <Badge variant="secondary">
+                <div className="rounded-lg border p-3">
+                  <span className="text-xs text-muted-foreground">Outcome</span>
+                  <Badge
+                    variant="outline"
+                    className={`mt-1 block w-fit text-xs border ${
+                      outcomeColors[selectedEvent.interview.outcome || "pending"] || ""
+                    }`}
+                  >
                     {selectedEvent.interview.outcome || "pending"}
                   </Badge>
                 </div>
               </div>
               {selectedEvent.interview.location && (
-                <div className="text-sm">
-                  <span className="text-muted-foreground">Location:</span>{" "}
-                  {selectedEvent.interview.location}
+                <div className="rounded-lg border p-3 text-sm">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <MapPin className="h-3 w-3" /> Location
+                  </span>
+                  <p className="font-medium mt-0.5">{selectedEvent.interview.location}</p>
                 </div>
               )}
             </div>

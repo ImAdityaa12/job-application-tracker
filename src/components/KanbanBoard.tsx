@@ -117,10 +117,10 @@ export function KanbanBoard() {
 
         <DragOverlay>
           {activeApp && (
-            <Card className="w-64 cursor-grabbing shadow-lg">
+            <Card className="w-64 cursor-grabbing shadow-xl border-primary/30 rotate-2">
               <CardContent className="p-3">
-                <p className="font-medium">{activeApp.company}</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="font-semibold text-sm">{activeApp.company}</p>
+                <p className="text-xs text-muted-foreground">
                   {activeApp.role}
                 </p>
               </CardContent>

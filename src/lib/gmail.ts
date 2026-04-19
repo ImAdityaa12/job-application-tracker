@@ -134,6 +134,103 @@ export async function fetchThreadDetails(
   return results;
 }
 
+interface GmailFullMessage {
+  id: string;
+  payload: {
+    mimeType: string;
+    headers: { name: string; value: string }[];
+    body?: { size: number; data?: string };
+    parts?: GmailMessagePart[];
+  };
+  snippet: string;
+}
+
+interface GmailMessagePart {
+  mimeType: string;
+  body?: { size: number; data?: string };
+  parts?: GmailMessagePart[];
+}
+
+interface GmailFullThread {
+  id: string;
+  messages: GmailFullMessage[];
+}
+
+function decodeBase64Url(data: string): string {
+  const base64 = data.replace(/-/g, "+").replace(/_/g, "/");
+  return Buffer.from(base64, "base64").toString("utf-8");
+}
+
+function extractBody(part: GmailMessagePart): { html: string | null; text: string | null } {
+  let html: string | null = null;
+  let text: string | null = null;
+
+  if (part.mimeType === "text/html" && part.body?.data) {
+    html = decodeBase64Url(part.body.data);
+  } else if (part.mimeType === "text/plain" && part.body?.data) {
+    text = decodeBase64Url(part.body.data);
+  }
+
+  if (part.parts) {
+    for (const subPart of part.parts) {
+      const nested = extractBody(subPart);
+      if (nested.html) html = nested.html;
+      if (nested.text && !text) text = nested.text;
+    }
+  }
+
+  return { html, text };
+}
+
+export interface FullEmailMessage {
+  id: string;
+  from: string;
+  to: string;
+  date: string;
+  subject: string;
+  body: string;
+  isHtml: boolean;
+}
+
+export async function fetchFullThread(
+  accessToken: string,
+  gmailThreadId: string
+): Promise<FullEmailMessage[]> {
+  const res = await fetch(
+    `https://gmail.googleapis.com/gmail/v1/users/me/threads/${gmailThreadId}?format=full`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  );
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Failed to fetch thread: ${err}`);
+  }
+
+  const thread: GmailFullThread = await res.json();
+
+  return thread.messages.map((msg) => {
+    const headers = msg.payload.headers || [];
+    const getHeader = (name: string) =>
+      headers.find((h) => h.name.toLowerCase() === name.toLowerCase())?.value || "";
+
+    const { html, text } = extractBody(msg.payload as GmailMessagePart);
+
+    // Prefer HTML, fall back to plain text
+    const body = html || text || msg.snippet || "";
+    const isHtml = !!html;
+
+    return {
+      id: msg.id,
+      from: getHeader("From"),
+      to: getHeader("To"),
+      date: getHeader("Date"),
+      subject: getHeader("Subject"),
+      body,
+      isHtml,
+    };
+  });
+}
+
 export function extractThreadMetadata(thread: GmailThreadDetail) {
   const firstMessage = thread.messages[0];
   const headers = firstMessage?.payload?.headers || [];

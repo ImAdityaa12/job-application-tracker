@@ -49,72 +49,73 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  /* Teal/Orange Productivity Palette */
+  --background: #F0FDFA;
+  --foreground: #134E4A;
+  --card: #FFFFFF;
+  --card-foreground: #134E4A;
+  --popover: #FFFFFF;
+  --popover-foreground: #134E4A;
+  --primary: #0D9488;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F0FDFA;
+  --secondary-foreground: #134E4A;
+  --muted: #E8F1F4;
+  --muted-foreground: #64748B;
+  --accent: #F0FDFA;
+  --accent-foreground: #134E4A;
+  --destructive: #DC2626;
+  --border: #D1E8E4;
+  --input: #D1E8E4;
+  --ring: #0D9488;
+  --chart-1: #0D9488;
+  --chart-2: #14B8A6;
+  --chart-3: #EA580C;
+  --chart-4: #6366F1;
+  --chart-5: #8B5CF6;
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #134E4A;
+  --sidebar-primary: #0D9488;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F0FDFA;
+  --sidebar-accent-foreground: #134E4A;
+  --sidebar-border: #D1E8E4;
+  --sidebar-ring: #0D9488;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #0C1917;
+  --foreground: #E2E8F0;
+  --card: #132622;
+  --card-foreground: #E2E8F0;
+  --popover: #132622;
+  --popover-foreground: #E2E8F0;
+  --primary: #14B8A6;
+  --primary-foreground: #042F2E;
+  --secondary: #1A3330;
+  --secondary-foreground: #E2E8F0;
+  --muted: #1A3330;
+  --muted-foreground: #94A3B8;
+  --accent: #1A3330;
+  --accent-foreground: #E2E8F0;
+  --destructive: #EF4444;
+  --border: #1E3A36;
+  --input: #1E3A36;
+  --ring: #14B8A6;
+  --chart-1: #14B8A6;
+  --chart-2: #2DD4BF;
+  --chart-3: #F97316;
+  --chart-4: #818CF8;
+  --chart-5: #A78BFA;
+  --sidebar: #0F1F1D;
+  --sidebar-foreground: #E2E8F0;
+  --sidebar-primary: #14B8A6;
+  --sidebar-primary-foreground: #042F2E;
+  --sidebar-accent: #1A3330;
+  --sidebar-accent-foreground: #E2E8F0;
+  --sidebar-border: #1E3A36;
+  --sidebar-ring: #14B8A6;
 }
 
 @layer base {
@@ -127,4 +128,100 @@
   html {
     @apply font-sans;
   }
+}
+
+/* React Big Calendar theme overrides */
+.calendar-themed .rbc-calendar {
+  font-family: var(--font-sans), sans-serif;
+}
+
+.calendar-themed .rbc-header {
+  padding: 8px 4px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--muted-foreground);
+  border-bottom: 1px solid var(--border);
+}
+
+.calendar-themed .rbc-month-view,
+.calendar-themed .rbc-time-view {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.calendar-themed .rbc-day-bg {
+  background: var(--card);
+}
+
+.calendar-themed .rbc-off-range-bg {
+  background: var(--muted);
+}
+
+.calendar-themed .rbc-today {
+  background: color-mix(in srgb, var(--primary) 8%, transparent) !important;
+}
+
+.calendar-themed .rbc-month-row + .rbc-month-row,
+.calendar-themed .rbc-day-bg + .rbc-day-bg {
+  border-color: var(--border);
+}
+
+.calendar-themed .rbc-toolbar {
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.calendar-themed .rbc-toolbar button {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--foreground);
+  background: var(--card);
+  transition: all 150ms;
+}
+
+.calendar-themed .rbc-toolbar button:hover {
+  background: var(--accent);
+}
+
+.calendar-themed .rbc-toolbar button.rbc-active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
+.calendar-themed .rbc-toolbar .rbc-toolbar-label {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--foreground);
+}
+
+.calendar-themed .rbc-date-cell {
+  padding: 4px 8px;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+.calendar-themed .rbc-date-cell.rbc-now {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.calendar-themed .rbc-event {
+  border: none;
+  outline: none;
+}
+
+.calendar-themed .rbc-event:focus {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+
+.calendar-themed .rbc-show-more {
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 12px;
 }

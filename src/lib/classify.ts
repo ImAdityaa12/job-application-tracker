@@ -1,6 +1,6 @@
-import Groq from "groq-sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export interface ClassifiedThread {
   threadId: string;
@@ -62,17 +62,14 @@ ${JSON.stringify(threads)}
 
 Return ONLY a JSON array. No markdown, no extra text.`;
 
-  const completion = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.1,
-    max_tokens: 4096,
-  });
-
-  const text = completion.choices[0]?.message?.content || "";
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const result = await model.generateContent(prompt);
+  const text = result.response.text();
 
   try {
-    return JSON.parse(text) as ClassifiedThread[];
+    // Strip markdown code fences if present
+    const cleaned = text.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "");
+    return JSON.parse(cleaned) as ClassifiedThread[];
   } catch {
     console.error("Failed to parse classification response:", text);
     return [];
