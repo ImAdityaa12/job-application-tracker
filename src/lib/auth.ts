@@ -15,7 +15,7 @@ export const auth = betterAuth({
         "https://www.googleapis.com/auth/gmail.readonly",
       ],
       accessType: "offline",
-      prompt: "consent",
+      prompt: "select_account consent",
     },
   },
 });
