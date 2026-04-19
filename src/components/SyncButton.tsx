@@ -11,6 +11,11 @@ export function SyncButton({ lastSyncedAt }: { lastSyncedAt?: string | null }) {
 
   async function handleSync() {
     setSyncing(true);
+    const toastId = toast.loading(
+      "Syncing Gmail — scanning inbox, fetching threads & classifying emails. This may take a minute...",
+      { duration: Infinity }
+    );
+
     try {
       const res = await fetch("/api/sync/gmail", { method: "POST" });
       const data = await res.json();
@@ -18,11 +23,14 @@ export function SyncButton({ lastSyncedAt }: { lastSyncedAt?: string | null }) {
       if (!res.ok) throw new Error(data.error);
 
       toast.success(
-        `Sync complete: ${data.newThreads} new threads found out of ${data.threadsFound} total`
+        `Sync complete: ${data.newThreads} new threads found out of ${data.threadsFound} total`,
+        { id: toastId }
       );
       queryClient.invalidateQueries();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Sync failed");
+      toast.error(err instanceof Error ? err.message : "Sync failed", {
+        id: toastId,
+      });
     } finally {
       setSyncing(false);
     }
@@ -30,7 +38,7 @@ export function SyncButton({ lastSyncedAt }: { lastSyncedAt?: string | null }) {
 
   return (
     <div className="flex items-center gap-3">
-      <Button onClick={handleSync} disabled={syncing}>
+      <Button onClick={handleSync} disabled={syncing} className="min-w-[130px]">
         {syncing ? (
           <>
             <svg
