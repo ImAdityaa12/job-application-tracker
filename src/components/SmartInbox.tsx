@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { Inbox, Mail, ArrowUpRight } from "lucide-react";
+import { EmailViewer } from "@/components/EmailViewer";
 
 interface Thread {
   id: string;
@@ -34,12 +36,15 @@ const priorityConfig: Record<string, { class: string }> = {
   low: { class: "bg-slate-50 text-slate-500 border-slate-200" },
 };
 
-function ThreadRow({ thread }: { thread: Thread }) {
+function ThreadRow({ thread, onClick }: { thread: Thread; onClick?: () => void }) {
   const catConfig = categoryConfig[thread.category] || categoryConfig.confirmation;
   const priConfig = priorityConfig[thread.priority || "low"] || priorityConfig.low;
 
   return (
-    <div className="flex items-center justify-between rounded-lg border p-3.5 hover:bg-accent/50 hover:border-primary/20 transition-all duration-150 group">
+    <div
+      className="flex items-center justify-between rounded-lg border p-3.5 hover:bg-accent/50 hover:border-primary/20 transition-all duration-150 group cursor-pointer"
+      onClick={onClick}
+    >
       <div className="flex items-start gap-3 min-w-0 flex-1">
         <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted">
           <Mail className="h-4 w-4 text-muted-foreground" />
@@ -119,6 +124,7 @@ function ThreadListSkeleton() {
 }
 
 export function SmartInbox() {
+  const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
   const { data: threads = [], isLoading } = useQuery<Thread[]>({
     queryKey: ["threads"],
     queryFn: () => fetch("/api/threads").then((r) => r.json()),
@@ -150,7 +156,7 @@ export function SmartInbox() {
         ) : (
           <div className="space-y-2">
             {needsAttention.map((thread) => (
-              <ThreadRow key={thread.id} thread={thread} />
+              <ThreadRow key={thread.id} thread={thread} onClick={() => setSelectedThread(thread)} />
             ))}
           </div>
         )}
@@ -164,11 +170,17 @@ export function SmartInbox() {
         ) : (
           <div className="space-y-2">
             {confirmations.map((thread) => (
-              <ThreadRow key={thread.id} thread={thread} />
+              <ThreadRow key={thread.id} thread={thread} onClick={() => setSelectedThread(thread)} />
             ))}
           </div>
         )}
       </TabsContent>
+
+      <EmailViewer
+        threadId={selectedThread?.id ?? null}
+        threadMeta={selectedThread ? { subject: selectedThread.subject, category: selectedThread.category } : undefined}
+        onClose={() => setSelectedThread(null)}
+      />
     </Tabs>
   );
 }

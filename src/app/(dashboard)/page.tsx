@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
@@ -7,6 +8,7 @@ import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SyncButton } from "@/components/SyncButton";
+import { EmailViewer } from "@/components/EmailViewer";
 import {
   Briefcase,
   Zap,
@@ -109,6 +111,8 @@ export default function DashboardPage() {
     );
   }
 
+  const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
+
   if (!session) return null;
 
   const recentSignals = (threads || [])
@@ -197,7 +201,8 @@ export default function DashboardPage() {
                     return (
                       <div
                         key={thread.id}
-                        className="flex items-start gap-3 rounded-lg border p-3 transition-colors duration-150 hover:bg-accent/50"
+                        className="flex items-start gap-3 rounded-lg border p-3 transition-colors duration-150 hover:bg-accent/50 cursor-pointer"
+                        onClick={() => setSelectedThread(thread)}
                       >
                         <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted">
                           <Mail className="h-4 w-4 text-muted-foreground" />
@@ -233,6 +238,12 @@ export default function DashboardPage() {
           </Card>
         </>
       )}
+
+      <EmailViewer
+        threadId={selectedThread?.id ?? null}
+        threadMeta={selectedThread ? { subject: selectedThread.subject, category: selectedThread.category } : undefined}
+        onClose={() => setSelectedThread(null)}
+      />
     </div>
   );
 }
