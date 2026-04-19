@@ -22,6 +22,15 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import {
+  Mail,
+  CalendarDays,
+  MapPin,
+  DollarSign,
+  Plus,
+  StickyNote,
+  Clock,
+} from "lucide-react";
 
 interface Application {
   id: string;
@@ -50,6 +59,21 @@ interface Interview {
   location: string | null;
   outcome: string | null;
 }
+
+const statusColors: Record<string, string> = {
+  applied: "bg-blue-50 text-blue-700 border-blue-200",
+  screening: "bg-amber-50 text-amber-700 border-amber-200",
+  interview: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  offer: "bg-violet-50 text-violet-700 border-violet-200",
+  rejected: "bg-red-50 text-red-700 border-red-200",
+  withdrawn: "bg-slate-50 text-slate-600 border-slate-200",
+};
+
+const outcomeColors: Record<string, string> = {
+  pending: "bg-amber-50 text-amber-700 border-amber-200",
+  passed: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  failed: "bg-red-50 text-red-700 border-red-200",
+};
 
 export function ApplicationSheet({
   application,
@@ -120,55 +144,70 @@ export function ApplicationSheet({
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent className="w-[500px] overflow-y-auto sm:max-w-[500px]">
         <SheetHeader>
-          <SheetTitle>{application.company}</SheetTitle>
+          <SheetTitle className="text-xl">{application.company}</SheetTitle>
           <p className="text-sm text-muted-foreground">{application.role}</p>
         </SheetHeader>
 
-        <div className="mt-6 space-y-6">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <Label className="text-muted-foreground">Status</Label>
-              <p className="font-medium capitalize">{application.status}</p>
+        <div className="mt-6 space-y-5">
+          {/* Status & details */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-lg border p-3">
+              <Label className="text-xs text-muted-foreground">Status</Label>
+              <Badge
+                variant="outline"
+                className={`mt-1 block w-fit capitalize border ${statusColors[application.status] || ""}`}
+              >
+                {application.status}
+              </Badge>
             </div>
-            <div>
-              <Label className="text-muted-foreground">Applied</Label>
-              <p className="font-medium">
+            <div className="rounded-lg border p-3">
+              <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                <Clock className="h-3 w-3" /> Applied
+              </Label>
+              <p className="font-medium text-sm mt-1">
                 {application.appliedAt
                   ? new Date(application.appliedAt).toLocaleDateString()
                   : "N/A"}
               </p>
             </div>
             {application.location && (
-              <div>
-                <Label className="text-muted-foreground">Location</Label>
-                <p className="font-medium">{application.location}</p>
+              <div className="rounded-lg border p-3">
+                <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                  <MapPin className="h-3 w-3" /> Location
+                </Label>
+                <p className="font-medium text-sm mt-1">{application.location}</p>
               </div>
             )}
             {application.salaryRange && (
-              <div>
-                <Label className="text-muted-foreground">Salary</Label>
-                <p className="font-medium">{application.salaryRange}</p>
+              <div className="rounded-lg border p-3">
+                <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                  <DollarSign className="h-3 w-3" /> Salary
+                </Label>
+                <p className="font-medium text-sm mt-1">{application.salaryRange}</p>
               </div>
             )}
           </div>
 
           <Separator />
 
+          {/* Email Threads */}
           <div>
-            <Label className="text-muted-foreground">Email Threads</Label>
+            <Label className="text-muted-foreground flex items-center gap-1.5 text-sm">
+              <Mail className="h-3.5 w-3.5" /> Email Threads
+            </Label>
             {!threads || threads.length === 0 ? (
               <p className="text-sm text-muted-foreground mt-2">
                 No linked email threads
               </p>
             ) : (
-              <div className="mt-2 space-y-2">
+              <div className="mt-2 space-y-1.5">
                 {threads.map((thread) => (
-                  <div key={thread.id} className="rounded border p-2 text-sm">
+                  <div key={thread.id} className="rounded-lg border p-2.5 text-sm hover:bg-accent/30 transition-colors">
                     <div className="flex items-center gap-2">
-                      <span className="truncate font-medium">
+                      <span className="truncate font-medium text-sm">
                         {thread.subject}
                       </span>
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="outline" className="text-[11px] px-1.5 py-0 shrink-0">
                         {thread.category}
                       </Badge>
                     </div>
@@ -185,21 +224,26 @@ export function ApplicationSheet({
 
           <Separator />
 
+          {/* Interviews */}
           <div>
             <div className="flex items-center justify-between">
-              <Label className="text-muted-foreground">Interviews</Label>
+              <Label className="text-muted-foreground flex items-center gap-1.5 text-sm">
+                <CalendarDays className="h-3.5 w-3.5" /> Interviews
+              </Label>
               <Button
                 variant="outline"
                 size="sm"
+                className="gap-1 h-7 text-xs"
                 onClick={() => setShowAddInterview(!showAddInterview)}
               >
-                Add Interview
+                <Plus className="h-3 w-3" />
+                Add
               </Button>
             </div>
 
             {showAddInterview && (
               <form
-                className="mt-3 space-y-3 rounded border p-3"
+                className="mt-3 space-y-3 rounded-lg border p-3 bg-muted/30"
                 onSubmit={(e) => {
                   e.preventDefault();
                   const formData = new FormData(e.currentTarget);
@@ -225,24 +269,29 @@ export function ApplicationSheet({
                 </Select>
                 <Input name="scheduledAt" type="datetime-local" required />
                 <Input name="location" placeholder="Zoom link, address..." />
-                <Button type="submit" size="sm">
-                  Save
+                <Button type="submit" size="sm" className="w-full">
+                  Save Interview
                 </Button>
               </form>
             )}
 
             {interviews && interviews.length > 0 && (
-              <div className="mt-2 space-y-2">
+              <div className="mt-2 space-y-1.5">
                 {interviews.map((interview) => (
                   <div
                     key={interview.id}
-                    className="rounded border p-2 text-sm"
+                    className="rounded-lg border p-2.5 text-sm hover:bg-accent/30 transition-colors"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-medium capitalize">
+                      <span className="font-medium capitalize text-sm">
                         {interview.type.replace("_", " ")}
                       </span>
-                      <Badge variant="secondary">
+                      <Badge
+                        variant="outline"
+                        className={`text-[11px] px-1.5 py-0 border ${
+                          outcomeColors[interview.outcome || "pending"] || ""
+                        }`}
+                      >
                         {interview.outcome || "pending"}
                       </Badge>
                     </div>
@@ -250,7 +299,8 @@ export function ApplicationSheet({
                       {new Date(interview.scheduledAt).toLocaleString()}
                     </p>
                     {interview.location && (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <MapPin className="h-2.5 w-2.5" />
                         {interview.location}
                       </p>
                     )}
@@ -262,8 +312,11 @@ export function ApplicationSheet({
 
           <Separator />
 
+          {/* Notes */}
           <div>
-            <Label className="text-muted-foreground">Notes</Label>
+            <Label className="text-muted-foreground flex items-center gap-1.5 text-sm">
+              <StickyNote className="h-3.5 w-3.5" /> Notes
+            </Label>
             <Textarea
               className="mt-2"
               value={notes}

@@ -7,6 +7,15 @@ import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SyncButton } from "@/components/SyncButton";
+import {
+  Briefcase,
+  Zap,
+  CalendarCheck,
+  Trophy,
+  Mail,
+  ArrowRight,
+  Inbox,
+} from "lucide-react";
 
 interface Stats {
   total: number;
@@ -26,13 +35,49 @@ interface Thread {
   receivedAt: string | null;
 }
 
-const categoryColors: Record<string, string> = {
-  signal: "bg-blue-100 text-blue-800",
-  interview: "bg-green-100 text-green-800",
-  offer: "bg-purple-100 text-purple-800",
-  rejection: "bg-red-100 text-red-800",
-  confirmation: "bg-gray-100 text-gray-800",
+const categoryConfig: Record<string, { class: string; dot: string }> = {
+  signal: { class: "bg-blue-50 text-blue-700 border-blue-200", dot: "bg-blue-500" },
+  interview: { class: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500" },
+  offer: { class: "bg-violet-50 text-violet-700 border-violet-200", dot: "bg-violet-500" },
+  rejection: { class: "bg-red-50 text-red-700 border-red-200", dot: "bg-red-500" },
+  confirmation: { class: "bg-slate-50 text-slate-600 border-slate-200", dot: "bg-slate-400" },
 };
+
+const statCards = [
+  { key: "total", label: "Total Applications", icon: Briefcase, color: "text-teal-600", bg: "bg-teal-50" },
+  { key: "active", label: "Active", icon: Zap, color: "text-orange-600", bg: "bg-orange-50" },
+  { key: "interviewsUpcoming", label: "Interviews (7d)", icon: CalendarCheck, color: "text-blue-600", bg: "bg-blue-50" },
+  { key: "offers", label: "Offers", icon: Trophy, color: "text-violet-600", bg: "bg-violet-50" },
+] as const;
+
+function StatSkeleton() {
+  return (
+    <Card className="animate-pulse">
+      <CardHeader className="pb-2">
+        <div className="h-4 w-24 rounded bg-muted" />
+      </CardHeader>
+      <CardContent>
+        <div className="h-8 w-12 rounded bg-muted" />
+      </CardContent>
+    </Card>
+  );
+}
+
+function ActivitySkeleton() {
+  return (
+    <div className="space-y-3">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="animate-pulse flex items-start gap-3 rounded-lg border p-3">
+          <div className="h-9 w-9 rounded-full bg-muted shrink-0" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 w-32 rounded bg-muted" />
+            <div className="h-3 w-48 rounded bg-muted" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const { data: session, isPending } = useSession();
@@ -44,13 +89,13 @@ export default function DashboardPage() {
     }
   }, [isPending, session, router]);
 
-  const { data: stats } = useQuery<Stats>({
+  const { data: stats, isLoading: statsLoading } = useQuery<Stats>({
     queryKey: ["stats"],
     queryFn: () => fetch("/api/stats").then((r) => r.json()),
     enabled: !!session,
   });
 
-  const { data: threads } = useQuery<Thread[]>({
+  const { data: threads, isLoading: threadsLoading } = useQuery<Thread[]>({
     queryKey: ["threads-recent"],
     queryFn: () => fetch("/api/threads").then((r) => r.json()),
     enabled: !!session,
@@ -59,7 +104,7 @@ export default function DashboardPage() {
   if (isPending) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
   }
@@ -75,106 +120,113 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Track your job applications at a glance
+          </p>
+        </div>
         <SyncButton lastSyncedAt={stats?.lastSyncedAt} />
       </div>
 
-      {hasNoData ? (
-        <Card className="py-12">
+      {hasNoData && !statsLoading ? (
+        <Card className="py-16 border-dashed border-2">
           <CardContent className="text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+              <Mail className="h-7 w-7 text-primary" />
+            </div>
             <h2 className="text-xl font-semibold mb-2">
               Welcome to Job Tracker
             </h2>
-            <p className="text-muted-foreground mb-4">
-              Click &ldquo;Sync Gmail&rdquo; to scan your inbox for job application
-              emails and start tracking automatically.
+            <p className="text-muted-foreground mb-1 max-w-sm mx-auto">
+              Click &ldquo;Sync Gmail&rdquo; to scan your inbox for job
+              application emails and start tracking automatically.
             </p>
           </CardContent>
         </Card>
       ) : (
         <>
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Applications
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold">{stats?.total ?? 0}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Active
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold">{stats?.active ?? 0}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Interviews (7 days)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold">
-                  {stats?.interviewsUpcoming ?? 0}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Offers
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold">{stats?.offers ?? 0}</p>
-              </CardContent>
-            </Card>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {statsLoading
+              ? [1, 2, 3, 4].map((i) => <StatSkeleton key={i} />)
+              : statCards.map((card) => {
+                  const Icon = card.icon;
+                  const value = stats?.[card.key] ?? 0;
+                  return (
+                    <Card key={card.key} className="transition-shadow duration-150 hover:shadow-md">
+                      <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                          {card.label}
+                        </CardTitle>
+                        <div className={`rounded-lg p-2 ${card.bg}`}>
+                          <Icon className={`h-4 w-4 ${card.color}`} strokeWidth={2} />
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-3xl font-bold tracking-tight">{value}</p>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
           </div>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Recent Activity</CardTitle>
+              {recentSignals.length > 0 && (
+                <button
+                  onClick={() => router.push("/inbox")}
+                  className="flex items-center gap-1 text-sm text-primary font-medium hover:underline"
+                >
+                  View all <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+              )}
             </CardHeader>
             <CardContent>
-              {recentSignals.length === 0 ? (
-                <p className="text-muted-foreground">No recent activity</p>
+              {threadsLoading ? (
+                <ActivitySkeleton />
+              ) : recentSignals.length === 0 ? (
+                <div className="text-center py-8">
+                  <Inbox className="h-10 w-10 text-muted-foreground/40 mx-auto mb-2" />
+                  <p className="text-muted-foreground text-sm">No recent activity</p>
+                </div>
               ) : (
-                <div className="space-y-3">
-                  {recentSignals.map((thread) => (
-                    <div
-                      key={thread.id}
-                      className="flex items-start justify-between rounded-md border p-3"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium truncate">
-                            {thread.fromName || "Unknown"}
-                          </span>
-                          <Badge
-                            variant="secondary"
-                            className={categoryColors[thread.category] || ""}
-                          >
-                            {thread.category}
-                          </Badge>
+                <div className="space-y-2">
+                  {recentSignals.map((thread) => {
+                    const config = categoryConfig[thread.category] || categoryConfig.confirmation;
+                    return (
+                      <div
+                        key={thread.id}
+                        className="flex items-start gap-3 rounded-lg border p-3 transition-colors duration-150 hover:bg-accent/50"
+                      >
+                        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
                         </div>
-                        <p className="text-sm text-muted-foreground truncate mt-1">
-                          {thread.subject}
-                        </p>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-sm truncate">
+                              {thread.fromName || "Unknown"}
+                            </span>
+                            <Badge
+                              variant="outline"
+                              className={`text-[11px] px-1.5 py-0 font-medium border ${config.class}`}
+                            >
+                              <span className={`mr-1 inline-block h-1.5 w-1.5 rounded-full ${config.dot}`} />
+                              {thread.category}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground truncate mt-0.5">
+                            {thread.subject}
+                          </p>
+                        </div>
+                        {thread.receivedAt && (
+                          <span className="text-xs text-muted-foreground whitespace-nowrap ml-2 mt-0.5">
+                            {new Date(thread.receivedAt).toLocaleDateString()}
+                          </span>
+                        )}
                       </div>
-                      {thread.receivedAt && (
-                        <span className="text-xs text-muted-foreground whitespace-nowrap ml-4">
-                          {new Date(thread.receivedAt).toLocaleDateString()}
-                        </span>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

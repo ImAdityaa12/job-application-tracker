@@ -3,21 +3,27 @@
 import { signIn } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Briefcase } from "lucide-react";
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Job Application Tracker</CardTitle>
-          <CardDescription>
-            Connect your Gmail to automatically track job applications
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+      <Card className="w-full max-w-md shadow-lg border-border/60">
+        <CardHeader className="text-center pb-2">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-sm">
+            <Briefcase className="h-6 w-6 text-primary-foreground" />
+          </div>
+          <CardTitle className="text-2xl font-bold tracking-tight">Job Application Tracker</CardTitle>
+          <CardDescription className="mt-1">
+            Connect your Gmail to automatically track job applications,
+            interviews, and offers.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-2">
           <Button
-            className="w-full"
+            className="w-full h-11 font-medium transition-all duration-150"
             size="lg"
+            variant="outline"
             onClick={() =>
               signIn.social({
                 provider: "google",
@@ -25,7 +31,7 @@ export default function LoginPage() {
               })
             }
           >
-            <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
+            <svg className="mr-2.5 h-5 w-5" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
                 fill="#4285F4"
@@ -45,6 +51,9 @@ export default function LoginPage() {
             </svg>
             Sign in with Google
           </Button>
+          <p className="mt-4 text-center text-xs text-muted-foreground">
+            We only request read-only access to your Gmail.
+          </p>
         </CardContent>
       </Card>
     </div>
