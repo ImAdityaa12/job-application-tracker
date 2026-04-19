@@ -1,6 +1,6 @@
-import Anthropic from "@anthropic-ai/sdk";
+import Groq from "groq-sdk";
 
-const anthropic = new Anthropic();
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export interface ClassifiedThread {
   threadId: string;
@@ -62,14 +62,14 @@ ${JSON.stringify(threads)}
 
 Return ONLY a JSON array. No markdown, no extra text.`;
 
-  const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 4096,
+  const completion = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
     messages: [{ role: "user", content: prompt }],
+    temperature: 0.1,
+    max_tokens: 4096,
   });
 
-  const text =
-    message.content[0].type === "text" ? message.content[0].text : "";
+  const text = completion.choices[0]?.message?.content || "";
 
   try {
     return JSON.parse(text) as ClassifiedThread[];
