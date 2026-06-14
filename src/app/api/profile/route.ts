@@ -12,7 +12,15 @@ export async function GET() {
       .from(profiles)
       .where(eq(profiles.userId, session.user.id));
 
-    return NextResponse.json(profile ?? null);
+    if (!profile) return NextResponse.json(null);
+
+    // Don't ship the (potentially large) base64 file blob to the client —
+    // expose only whether one exists and its filename.
+    const { resumeFileData, ...rest } = profile;
+    return NextResponse.json({
+      ...rest,
+      hasResumeFile: !!resumeFileData,
+    });
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

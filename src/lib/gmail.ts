@@ -254,8 +254,28 @@ export interface SendGmailResult {
   threadId: string;
 }
 
+export interface GmailAttachment {
+  filename: string;
+  mimeType: string;
+  /** Base64-encoded (standard, not URL-safe) file contents. */
+  data: string;
+}
+
+// Wrap a base64 string to 76-character lines, as required for MIME bodies.
+function wrapBase64(data: string): string {
+  return data.replace(/[\r\n]/g, "").replace(/.{1,76}/g, "$&\r\n").trim();
+}
+
+// Sanitize a filename for use in MIME headers (strip quotes/control chars).
+function sanitizeFilename(name: string): string {
+  // eslint-disable-next-line no-control-regex
+  const cleaned = name.replace(/[\r\n"\\]|[\x00-\x1F]/g, "").trim();
+  return cleaned || "attachment";
+}
+
 /**
- * Sends a plain-text email from the authenticated user's Gmail account.
+ * Sends an email from the authenticated user's Gmail account. When
+ * `attachments` are provided, the message is built as multipart/mixed.
  * Requires the `gmail.send` OAuth scope.
  */
 export async function sendGmailMessage(
@@ -266,12 +286,14 @@ export async function sendGmailMessage(
     body,
     fromName,
     fromEmail,
+    attachments,
   }: {
     to: string;
     subject: string;
     body: string;
     fromName?: string;
     fromEmail?: string;
+    attachments?: GmailAttachment[];
   }
 ): Promise<SendGmailResult> {
   const from =
@@ -279,16 +301,68 @@ export async function sendGmailMessage(
       ? `${encodeHeader(fromName)} <${fromEmail}>`
       : fromEmail || undefined;
 
-  const headers = [
+  const hasAttachments = !!attachments && attachments.length > 0;
+
+  const baseHeaders = [
     `To: ${to}`,
     from ? `From: ${from}` : null,
     `Subject: ${encodeHeader(subject)}`,
     "MIME-Version: 1.0",
-    'Content-Type: text/plain; charset="UTF-8"',
-    "Content-Transfer-Encoding: 8bit",
-  ].filter(Boolean);
+  ].filter(Boolean) as string[];
 
-  const mime = `${headers.join("\r\n")}\r\n\r\n${body}`;
+  let mime: string;
+
+  if (!hasAttachments) {
+    const headers = [
+      ...baseHeaders,
+      'Content-Type: text/plain; charset="UTF-8"',
+      "Content-Transfer-Encoding: 8bit",
+    ];
+    mime = `${headers.join("\r\n")}\r\n\r\n${body}`;
+  } else {
+    const boundary = `=_jat_${toBase64Url(
+      `${to}:${subject}:${attachments!.length}`
+    ).slice(0, 24)}`;
+
+    const parts: string[] = [];
+
+    // Text part
+    parts.push(
+      [
+        `--${boundary}`,
+        'Content-Type: text/plain; charset="UTF-8"',
+        "Content-Transfer-Encoding: 8bit",
+        "",
+        body,
+      ].join("\r\n")
+    );
+
+    // Attachment parts
+    for (const att of attachments!) {
+      const filename = sanitizeFilename(att.filename);
+      const mimeType = att.mimeType || "application/octet-stream";
+      parts.push(
+        [
+          `--${boundary}`,
+          `Content-Type: ${mimeType}; name="${filename}"`,
+          "Content-Transfer-Encoding: base64",
+          `Content-Disposition: attachment; filename="${filename}"`,
+          "",
+          wrapBase64(att.data),
+        ].join("\r\n")
+      );
+    }
+
+    const headers = [
+      ...baseHeaders,
+      `Content-Type: multipart/mixed; boundary="${boundary}"`,
+    ];
+
+    mime = `${headers.join("\r\n")}\r\n\r\n${parts.join(
+      "\r\n"
+    )}\r\n--${boundary}--`;
+  }
+
   const raw = toBase64Url(mime);
 
   const res = await fetch(
