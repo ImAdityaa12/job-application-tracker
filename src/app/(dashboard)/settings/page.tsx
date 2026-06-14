@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { ResumeSettings } from "@/components/ResumeSettings";
 import { User, Mail, RefreshCw, Clock, Shield } from "lucide-react";
 
 export default function SettingsPage() {
@@ -52,8 +53,10 @@ export default function SettingsPage() {
                 <div>
                   <Label className="text-sm font-medium">Gmail Access</Label>
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    Read-only access to your Gmail for scanning job application
-                    emails. We never modify or delete your emails.
+                    Read access to scan job application emails, plus send access
+                    so you can email applications from the Compose page. We never
+                    modify or delete your emails. If sending fails, re-connect
+                    below to grant the send permission.
                   </p>
                 </div>
               </div>
@@ -63,6 +66,8 @@ export default function SettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      <ResumeSettings />
 
       <Card>
         <CardHeader className="flex flex-row items-center gap-2">

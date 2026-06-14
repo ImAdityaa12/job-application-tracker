@@ -10,6 +10,7 @@ import {
   ClipboardList,
   CalendarDays,
   Inbox,
+  Send,
   Settings,
   LogOut,
   Briefcase,
@@ -20,6 +21,7 @@ const navItems = [
   { href: "/applications", label: "Applications", icon: ClipboardList },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/inbox", label: "Inbox", icon: Inbox },
+  { href: "/compose", label: "Compose", icon: Send },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
