@@ -121,3 +121,38 @@ export const syncLogs = pgTable("sync_logs", {
   status: text("status").default("success"),
   errorMessage: text("error_message"),
 });
+
+// Stores the user's resume + identity used to generate outreach emails.
+export const profiles = pgTable("profiles", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .unique()
+    .references(() => user.id, { onDelete: "cascade" }),
+  fullName: text("full_name"),
+  resumeText: text("resume_text"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Log of application emails generated and sent through the app.
+export const sentEmails = pgTable("sent_emails", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  applicationId: uuid("application_id").references(() => applications.id, {
+    onDelete: "set null",
+  }),
+  toEmail: text("to_email").notNull(),
+  company: text("company"),
+  role: text("role"),
+  details: text("details"),
+  subject: text("subject").notNull(),
+  body: text("body").notNull(),
+  gmailMessageId: text("gmail_message_id"),
+  gmailThreadId: text("gmail_thread_id"),
+  status: text("status").notNull().default("sent"), // sent | failed
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at").defaultNow(),
+});

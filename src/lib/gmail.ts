@@ -231,6 +231,98 @@ export async function fetchFullThread(
   });
 }
 
+function toBase64Url(input: Buffer | string): string {
+  const buf = typeof input === "string" ? Buffer.from(input, "utf-8") : input;
+  return buf
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+// RFC 2047 encode a header value if it contains non-ASCII characters.
+function encodeHeader(value: string): string {
+  // eslint-disable-next-line no-control-regex
+  if (/[^\x00-\x7F]/.test(value)) {
+    return `=?UTF-8?B?${Buffer.from(value, "utf-8").toString("base64")}?=`;
+  }
+  return value;
+}
+
+export interface SendGmailResult {
+  id: string;
+  threadId: string;
+}
+
+/**
+ * Sends a plain-text email from the authenticated user's Gmail account.
+ * Requires the `gmail.send` OAuth scope.
+ */
+export async function sendGmailMessage(
+  accessToken: string,
+  {
+    to,
+    subject,
+    body,
+    fromName,
+    fromEmail,
+  }: {
+    to: string;
+    subject: string;
+    body: string;
+    fromName?: string;
+    fromEmail?: string;
+  }
+): Promise<SendGmailResult> {
+  const from =
+    fromName && fromEmail
+      ? `${encodeHeader(fromName)} <${fromEmail}>`
+      : fromEmail || undefined;
+
+  const headers = [
+    `To: ${to}`,
+    from ? `From: ${from}` : null,
+    `Subject: ${encodeHeader(subject)}`,
+    "MIME-Version: 1.0",
+    'Content-Type: text/plain; charset="UTF-8"',
+    "Content-Transfer-Encoding: 8bit",
+  ].filter(Boolean);
+
+  const mime = `${headers.join("\r\n")}\r\n\r\n${body}`;
+  const raw = toBase64Url(mime);
+
+  const res = await fetch(
+    "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ raw }),
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    const message =
+      data?.error?.message || data?.error || "Failed to send email";
+    // Surface a clear hint when the send scope hasn't been granted yet.
+    if (
+      res.status === 403 &&
+      JSON.stringify(data).includes("ACCESS_TOKEN_SCOPE_INSUFFICIENT")
+    ) {
+      throw new Error(
+        "Gmail send permission not granted. Re-connect your Google account in Settings to allow sending."
+      );
+    }
+    throw new Error(message);
+  }
+
+  return { id: data.id, threadId: data.threadId };
+}
+
 export function extractThreadMetadata(thread: GmailThreadDetail) {
   const firstMessage = thread.messages[0];
   const headers = firstMessage?.payload?.headers || [];
