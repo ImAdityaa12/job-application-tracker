@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
   const role = (body.role || "").trim() || null;
   const details = (body.details || "").trim() || null;
   const companyInput = (body.company || "").trim();
+  const attachResume = body.attachResume === true;
 
   if (!EMAIL_RE.test(recipientEmail)) {
     return NextResponse.json(
@@ -98,6 +99,27 @@ export async function POST(request: NextRequest) {
     .where(eq(profiles.userId, session.user.id));
   const fromName = profile?.fullName || session.user.name || undefined;
 
+  // Build the resume attachment when the sender opted in.
+  let attachments: { filename: string; mimeType: string; data: string }[] | undefined;
+  if (attachResume) {
+    if (!profile?.resumeFileData) {
+      return NextResponse.json(
+        {
+          error:
+            "No resume file is uploaded. Upload one in Settings to attach it.",
+        },
+        { status: 400 }
+      );
+    }
+    attachments = [
+      {
+        filename: profile.resumeFileName || "resume.pdf",
+        mimeType: profile.resumeMimeType || "application/pdf",
+        data: profile.resumeFileData,
+      },
+    ];
+  }
+
   try {
     const { accessToken } = await getGoogleTokens(session.user.id);
 
@@ -107,6 +129,7 @@ export async function POST(request: NextRequest) {
       body: emailBody,
       fromName,
       fromEmail: session.user.email,
+      attachments,
     });
 
     // Track this outreach as an application (create or update).

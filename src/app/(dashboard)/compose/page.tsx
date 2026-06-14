@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,11 +9,20 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Sparkles, Send, FileText, RotateCw, AlertCircle } from "lucide-react";
+import {
+  Sparkles,
+  Send,
+  FileText,
+  RotateCw,
+  AlertCircle,
+  Paperclip,
+} from "lucide-react";
 
 interface Profile {
   fullName: string | null;
   resumeText: string | null;
+  resumeFileName: string | null;
+  hasResumeFile: boolean;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -35,8 +44,15 @@ export default function ComposePage() {
 
   const [generating, setGenerating] = useState(false);
   const [sending, setSending] = useState(false);
+  const [attachResume, setAttachResume] = useState(false);
 
   const hasResume = !!profile?.resumeText;
+  const hasResumeFile = !!profile?.hasResumeFile;
+
+  // Default to attaching the resume once we know the user has one on file.
+  useEffect(() => {
+    if (hasResumeFile) setAttachResume(true);
+  }, [hasResumeFile]);
 
   async function handleGenerate() {
     if (!role.trim()) return toast.error("Enter the job role.");
@@ -92,6 +108,7 @@ export default function ComposePage() {
           body,
           role,
           details,
+          attachResume: attachResume && hasResumeFile,
         }),
       });
       const data = await res.json();
@@ -248,6 +265,46 @@ export default function ComposePage() {
                 onChange={(e) => setBody(e.target.value)}
                 className="min-h-72 text-sm"
               />
+            </div>
+
+            <div className="flex items-center justify-between rounded-md border px-3 py-2.5">
+              <div className="flex items-center gap-2 min-w-0">
+                <Paperclip className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">Attach resume</p>
+                  {hasResumeFile ? (
+                    <p className="text-xs text-muted-foreground truncate">
+                      {attachResume
+                        ? `Attaching ${profile?.resumeFileName || "resume.pdf"}`
+                        : "Resume will not be attached"}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      No resume file uploaded —{" "}
+                      <Link href="/settings" className="underline">
+                        add one in Settings
+                      </Link>
+                    </p>
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={attachResume}
+                aria-label="Attach resume"
+                disabled={!hasResumeFile}
+                onClick={() => setAttachResume((v) => !v)}
+                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                  attachResume ? "bg-primary" : "bg-input"
+                }`}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-background shadow transition-transform ${
+                    attachResume ? "translate-x-5" : "translate-x-0.5"
+                  }`}
+                />
+              </button>
             </div>
 
             <div className="flex items-center gap-3">

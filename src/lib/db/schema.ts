@@ -131,6 +131,11 @@ export const profiles = pgTable("profiles", {
     .references(() => user.id, { onDelete: "cascade" }),
   fullName: text("full_name"),
   resumeText: text("resume_text"),
+  // The uploaded resume file (e.g. a PDF) that can be attached to outreach
+  // emails. Stored as base64 so it can be re-attached without re-uploading.
+  resumeFileName: text("resume_file_name"),
+  resumeFileData: text("resume_file_data"),
+  resumeMimeType: text("resume_mime_type"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
